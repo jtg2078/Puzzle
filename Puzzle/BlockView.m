@@ -65,6 +65,7 @@
             idLabel.font = [UIFont boldSystemFontOfSize:ID_LABEL_FONT_SIZE];
             idLabel.textColor = [UIColor redColor];
             idLabel.text = [NSString stringWithFormat:@"%d", blockId];
+            idLabel.textAlignment = UITextAlignmentRight;
             [self addSubview:idLabel];
             [idLabel release];
         }

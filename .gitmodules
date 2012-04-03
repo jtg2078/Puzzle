@@ -1,0 +1,3 @@
+[submodule "Library/TestFlight-SDK"]
+	path = Library/TestFlight-SDK
+	url = git://github.com/danielctull/TestFlight-SDK.git

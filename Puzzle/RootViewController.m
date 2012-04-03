@@ -12,12 +12,15 @@
 @interface RootViewController ()
 - (void)setupNavigationBarButtons;
 - (void)setupPuzzle;
+- (void)setupGestureRecognizersToBlock:(BlockView *)aBlock;
+
 - (void)shuffleBlocksWithAnimation:(BOOL)animation;
+- (CGPoint)testForPossibleMove:(BlockView *)aBlock;
+- (BOOL)checkForPuzzleCompleteState;
+
 - (UIImage *)diceUpImage:(UIImage *)aImage frame:(CGRect)aFrame;
 - (UIImage *)resizeImageIfNeeded:(UIImage *)aImage width:(CGFloat)aWidth height:(CGFloat)aHeight;
-
-- (CGPoint)testForPossibleMove:(BlockView *)aBlock;
-
+- (void)adjustAnchorPointForGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer;
 @end
 
 @implementation RootViewController
@@ -27,6 +30,7 @@
 #define NUM_BLOCK_PER_ROW_COL           4
 #define DEFAULT_IMAGE_NAME              @"UIE_Slider_Puzzle--globe.jpg"
 #define DEFAULT_BLOCK_ANIMATION_SPEED   0.2f
+#define SHUFFLE_MOVE_COUNT              20
 
 #pragma mark - synthesize
 
@@ -51,7 +55,7 @@
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         // Custom initialization
-        debuggingMode = YES;
+        debuggingMode = NO;
         invalid = CGPointMake(-1, -1);
     }
     return self;
@@ -90,9 +94,8 @@
         x = 0;
         for(int c = 0; c < cols; c++)
         {
-            CGRect blockFrame = CGRectMake(x, y, blockWidth, blockHeight);
-            //BlockView *block = [[BlockView alloc] initWithFrame:blockFrame];
-            BlockView *block = [[BlockView alloc] initWithFrame:blockFrame id:count showId:YES];
+            CGRect blockFrame = CGRectMake(x, y, blockWidth, blockHeight);            
+            BlockView *block = [[BlockView alloc] initWithFrame:blockFrame id:count showId:self.debuggingMode];
             block.originalPosition = CGPointMake(c, r);
             block.currentPosition = CGPointMake(c, r);
             
@@ -104,6 +107,7 @@
             }
             
             block.imageView.image = [self diceUpImage:image frame:blockFrame];
+            [self setupGestureRecognizersToBlock:block];
             
             [self.view addSubview:block];
             [array addObject:block];
@@ -118,45 +122,21 @@
     self.blockArray = array;
 }
 
-- (void)shuffleBlocksWithAnimation:(BOOL)animation
+- (void)setupGestureRecognizersToBlock:(BlockView *)aBlock
 {
-    NSMutableArray *actions = [NSMutableArray array];
-    int numOfMoves = 20;
+    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapBlock:)];
+    [tapGesture setNumberOfTapsRequired:1];
+    [tapGesture setDelegate:self];
+    [aBlock addGestureRecognizer:tapGesture];
+    [tapGesture release];
     
-    for(int i = 0; i < numOfMoves; i++)
-    {
-        for(BlockView *block in self.blockArray)
-        {
-            CGPoint possibleMove = [self testForPossibleMove:block];
-            if(CGPointEqualToPoint(possibleMove, invalid) == NO)
-            {
-                [actions addObject:block];
-            }
-        }
-        
-        if(self.debuggingMode == YES)
-        {
-            NSLog(@"list of blocks that can move");
-            [actions enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                BlockView *block = (BlockView *)obj;
-                NSLog(@"[%d]", block.blockId);
-            }];
-            
-            int moveCount = [actions count];
-            NSLog(@"number of avaiable moves: %d", [actions count]);
-            if(moveCount == 0)
-            {
-                CGPoint e = self.emptyBlock.currentPosition;
-                NSLog(@"zero available move! the empty block pos is %@", NSStringFromCGPoint(e));
-            }
-        }
-        
-        // pick an action from actions and perform it
-        int rand = arc4random() % actions.count;
-        BlockView *block = [actions objectAtIndex:rand];
-        [self swapBlcokAndEmptyBlockPosition:block animation:animation];
-        [actions removeAllObjects];
-    }
+    /*
+    UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panBlock:)];
+    [panGesture setMaximumNumberOfTouches:2];
+    [panGesture setDelegate:self];
+    [aBlock addGestureRecognizer:panGesture];
+    [panGesture release];
+     */
 }
 
 #pragma mark - view lifecycle
@@ -183,6 +163,47 @@
 }
 
 #pragma mark - game logic methods
+
+- (void)shuffleBlocksWithAnimation:(BOOL)animation
+{
+    NSMutableArray *moves = [NSMutableArray array];
+    int numOfMoves = SHUFFLE_MOVE_COUNT;
+    
+    for(int i = 0; i < numOfMoves; i++)
+    {
+        for(BlockView *block in self.blockArray)
+        {
+            CGPoint possibleMove = [self testForPossibleMove:block];
+            if(CGPointEqualToPoint(possibleMove, invalid) == NO)
+            {
+                [moves addObject:block];
+            }
+        }
+        
+        if(self.debuggingMode == YES)
+        {
+            NSLog(@"list of blocks that can move");
+            [moves enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                BlockView *block = (BlockView *)obj;
+                NSLog(@"[%d]", block.blockId);
+            }];
+            
+            int moveCount = [moves count];
+            NSLog(@"number of avaiable moves: %d", moveCount);
+            if(moveCount == 0)
+            {
+                CGPoint e = self.emptyBlock.currentPosition;
+                NSLog(@"zero available move! the empty block pos is %@", NSStringFromCGPoint(e));
+            }
+        }
+        
+        // pick an action from actions and perform it
+        int rand = arc4random() % moves.count;
+        BlockView *block = [moves objectAtIndex:rand];
+        [self swapBlcokAndEmptyBlockPosition:block animation:animation];
+        [moves removeAllObjects];
+    }
+}
 
 - (CGPoint)testForPossibleMove:(BlockView *)aBlock
 {
@@ -285,12 +306,93 @@
     }
 }
 
+- (BOOL)checkForPuzzleCompleteState
+{
+    BOOL matchedWithInitialState = YES;
+    
+    for(BlockView *block in self.blockArray)
+    {
+        if(CGPointEqualToPoint(block.originalPosition, block.currentPosition) == NO)
+        {
+            matchedWithInitialState = NO;
+            break;
+        }
+    }
+    
+    return matchedWithInitialState;
+}
+
 #pragma mark - user interaction
 
 - (void)shuffleButtonPressed
 {
     [self shuffleBlocksWithAnimation:YES];
 }
+
+- (void)tapBlock:(UITapGestureRecognizer *)gestureRecognizer
+{
+    BlockView *tappedBlock = (BlockView *)[gestureRecognizer view];
+    
+    CGPoint availableMove = [self testForPossibleMove:tappedBlock];
+    if(CGPointEqualToPoint(availableMove, invalid) == NO)
+    {
+        [self swapBlcokAndEmptyBlockPosition:tappedBlock animation:YES];
+        
+        if([self checkForPuzzleCompleteState] == YES)
+        {
+            // the puzzle is solved!
+            NSLog(@"you win!!");
+            
+            UIAlertView *message = [[[UIAlertView alloc] initWithTitle:@"You Win!" 
+                                                              message:@"Puzzle solved" 
+                                                             delegate:nil 
+                                                    cancelButtonTitle:@"ok" 
+                                                     otherButtonTitles: nil] autorelease];
+            [message show];
+        }
+    }
+}
+
+- (void)panBlock:(UIPanGestureRecognizer *)gestureRecognizer
+{
+    BlockView *pannedBlock = (BlockView *)[gestureRecognizer view];
+    [self adjustAnchorPointForGestureRecognizer:gestureRecognizer];
+    
+    if ([gestureRecognizer state] == UIGestureRecognizerStateBegan || [gestureRecognizer state] == UIGestureRecognizerStateChanged)
+    {
+        CGPoint availableMove = [self testForPossibleMove:pannedBlock];
+        if(CGPointEqualToPoint(availableMove, invalid) == NO)
+        {
+            CGPoint translation = [gestureRecognizer translationInView:[pannedBlock superview]];
+            
+            // find out if the move is horizontal or vertical
+            // since the either one x or y will remain the same, we can use this property
+            // to determine the moved direction
+            if(availableMove.x == pannedBlock.currentPosition.x)
+            {
+                // vertical
+                translation.x = 0;
+            }
+            else 
+            {
+                // horizontal
+                translation.y = 0;
+            }
+            
+            // limit the move range
+            
+            
+            CGPoint blockCenter = pannedBlock.center;
+            blockCenter.x += translation.x;
+            blockCenter.y += translation.y;
+            
+            pannedBlock.center = blockCenter;
+        }
+        [gestureRecognizer setTranslation:CGPointZero inView:[pannedBlock superview]];
+    }
+}
+
+#pragma mark - UIGestureRecognizerDelegate
 
 #pragma mark - utility methods
 
@@ -315,6 +417,18 @@
     UIGraphicsEndImageContext();
     
     return newImage;
+}
+
+// this method moves a gesture recognizer's view's anchor point between the user's fingers
+- (void)adjustAnchorPointForGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer {
+    if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
+        
+        UIView *piece = gestureRecognizer.view;
+        CGPoint locationInView = [gestureRecognizer locationInView:piece];
+        CGPoint locationInSuperview = [gestureRecognizer locationInView:piece.superview];
+        piece.layer.anchorPoint = CGPointMake(locationInView.x / piece.bounds.size.width, locationInView.y / piece.bounds.size.height);
+        piece.center = locationInSuperview;
+    }
 }
 
 @end

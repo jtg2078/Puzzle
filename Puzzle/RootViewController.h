@@ -7,9 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <QuartzCore/QuartzCore.h>
 
 @class BlockView;
-@interface RootViewController : UIViewController {
+@interface RootViewController : UIViewController <UIGestureRecognizerDelegate> {
     CGPoint invalid;
 }
 @property (nonatomic, retain) NSArray *blockArray;

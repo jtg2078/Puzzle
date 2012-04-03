@@ -18,6 +18,9 @@
 		965A7CCC152A1EBF002E7459 /* BlockView.m in Sources */ = {isa = PBXBuildFile; fileRef = 965A7CCB152A1EBF002E7459 /* BlockView.m */; };
 		965A7CD0152A2A78002E7459 /* UIE_Slider_Puzzle--globe.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 965A7CCE152A2A78002E7459 /* UIE_Slider_Puzzle--globe.jpg */; };
 		965A7CD1152A2A78002E7459 /* UIE_Slider_Puzzle--slider.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 965A7CCF152A2A78002E7459 /* UIE_Slider_Puzzle--slider.jpg */; };
+		9697A701152B4669000A20B3 /* libTestFlight.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9697A6FD152B4669000A20B3 /* libTestFlight.a */; };
+		9697A705152B468E000A20B3 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9697A704152B468E000A20B3 /* SystemConfiguration.framework */; };
+		9697A707152B46EF000A20B3 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9697A706152B46EF000A20B3 /* libz.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,6 +41,11 @@
 		965A7CCB152A1EBF002E7459 /* BlockView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BlockView.m; sourceTree = "<group>"; };
 		965A7CCE152A2A78002E7459 /* UIE_Slider_Puzzle--globe.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "UIE_Slider_Puzzle--globe.jpg"; sourceTree = "<group>"; };
 		965A7CCF152A2A78002E7459 /* UIE_Slider_Puzzle--slider.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "UIE_Slider_Puzzle--slider.jpg"; sourceTree = "<group>"; };
+		9697A6FD152B4669000A20B3 /* libTestFlight.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libTestFlight.a; sourceTree = "<group>"; };
+		9697A700152B4669000A20B3 /* TestFlight.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestFlight.h; sourceTree = "<group>"; };
+		9697A704152B468E000A20B3 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		9697A706152B46EF000A20B3 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		9697A708152B480A000A20B3 /* Puzzle.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Puzzle.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -45,9 +53,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9697A707152B46EF000A20B3 /* libz.dylib in Frameworks */,
+				9697A705152B468E000A20B3 /* SystemConfiguration.framework in Frameworks */,
 				965A7CAF152A1E20002E7459 /* UIKit.framework in Frameworks */,
 				965A7CB1152A1E20002E7459 /* Foundation.framework in Frameworks */,
 				965A7CB3152A1E20002E7459 /* CoreGraphics.framework in Frameworks */,
+				9697A701152B4669000A20B3 /* libTestFlight.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -57,6 +68,7 @@
 		965A7C9F152A1E20002E7459 = {
 			isa = PBXGroup;
 			children = (
+				9697A6FA152B4652000A20B3 /* Library */,
 				965A7CCD152A2A68002E7459 /* Asset */,
 				965A7CB4152A1E20002E7459 /* Puzzle */,
 				965A7CAD152A1E20002E7459 /* Frameworks */,
@@ -75,9 +87,11 @@
 		965A7CAD152A1E20002E7459 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				965A7CAE152A1E20002E7459 /* UIKit.framework */,
-				965A7CB0152A1E20002E7459 /* Foundation.framework */,
 				965A7CB2152A1E20002E7459 /* CoreGraphics.framework */,
+				965A7CB0152A1E20002E7459 /* Foundation.framework */,
+				9697A706152B46EF000A20B3 /* libz.dylib */,
+				9697A704152B468E000A20B3 /* SystemConfiguration.framework */,
+				965A7CAE152A1E20002E7459 /* UIKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -100,6 +114,7 @@
 		965A7CB5152A1E20002E7459 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				9697A708152B480A000A20B3 /* Puzzle.entitlements */,
 				965A7CB6152A1E20002E7459 /* Puzzle-Info.plist */,
 				965A7CB7152A1E20002E7459 /* InfoPlist.strings */,
 				965A7CBA152A1E20002E7459 /* main.m */,
@@ -115,6 +130,24 @@
 				965A7CCF152A2A78002E7459 /* UIE_Slider_Puzzle--slider.jpg */,
 			);
 			name = Asset;
+			sourceTree = "<group>";
+		};
+		9697A6FA152B4652000A20B3 /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				9697A6FC152B4669000A20B3 /* TestFlight-SDK */,
+			);
+			name = Library;
+			sourceTree = "<group>";
+		};
+		9697A6FC152B4669000A20B3 /* TestFlight-SDK */ = {
+			isa = PBXGroup;
+			children = (
+				9697A6FD152B4669000A20B3 /* libTestFlight.a */,
+				9697A700152B4669000A20B3 /* TestFlight.h */,
+			);
+			name = "TestFlight-SDK";
+			path = "Library/TestFlight-SDK";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -207,7 +240,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = (
+					armv6,
+					armv7,
+				);
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -222,7 +258,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.2;
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -231,7 +267,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = (
+					armv6,
+					armv7,
+				);
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -239,7 +278,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.2;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
@@ -249,9 +288,14 @@
 		965A7CC3152A1E21002E7459 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Puzzle/Puzzle-Prefix.pch";
 				INFOPLIST_FILE = "Puzzle/Puzzle-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/Library/TestFlight-SDK\"",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -260,13 +304,57 @@
 		965A7CC4152A1E21002E7459 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Puzzle/Puzzle-Prefix.pch";
 				INFOPLIST_FILE = "Puzzle/Puzzle-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/Library/TestFlight-SDK\"",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
+		};
+		9697A709152B4875000A20B3 /* Ad hoc */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = (
+					armv6,
+					armv7,
+				);
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.2;
+				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = "Ad hoc";
+		};
+		9697A70A152B4875000A20B3 /* Ad hoc */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Puzzle/Puzzle.entitlements;
+				COPY_PHASE_STRIP = NO;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Puzzle/Puzzle-Prefix.pch";
+				INFOPLIST_FILE = "Puzzle/Puzzle-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/Library/TestFlight-SDK\"",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = "Ad hoc";
 		};
 /* End XCBuildConfiguration section */
 
@@ -276,6 +364,7 @@
 			buildConfigurations = (
 				965A7CC0152A1E21002E7459 /* Debug */,
 				965A7CC1152A1E21002E7459 /* Release */,
+				9697A709152B4875000A20B3 /* Ad hoc */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -285,8 +374,10 @@
 			buildConfigurations = (
 				965A7CC3152A1E21002E7459 /* Debug */,
 				965A7CC4152A1E21002E7459 /* Release */,
+				9697A70A152B4875000A20B3 /* Ad hoc */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

@@ -8,8 +8,15 @@
 
 #import "AppDelegate.h"
 #import "RootViewController.h"
+#import "TestFlight.h"
 
 @implementation AppDelegate
+
+#pragma mark - define
+
+#define TESTFLIGHT_TOKEN    @"05b650d0be87f18c4b39a68b8f315691_Nzc0OTkyMDEyLTA0LTAzIDExOjA3OjM4LjA4NTE3OA"
+
+#pragma mark - synthesize
 
 @synthesize window = _window;
 
@@ -21,11 +28,14 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    [TestFlight takeOff:TESTFLIGHT_TOKEN];
+    
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
     // Override point for customization after application launch.
     
     RootViewController *rvc = [[[RootViewController alloc] initWithNibName:nil bundle:nil] autorelease];
     UINavigationController *nav = [[[UINavigationController alloc] initWithRootViewController:rvc] autorelease];
+    nav.navigationBar.barStyle = UIBarStyleBlackOpaque;
     [self.window setRootViewController:nav];
     
     // end override point
