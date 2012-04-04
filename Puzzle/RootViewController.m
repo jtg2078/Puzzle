@@ -87,6 +87,21 @@
     [leftButton release];
 }
 
+- (void)setupGestureRecognizersToBlock:(BlockView *)aBlock
+{
+    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapBlock:)];
+    [tapGesture setNumberOfTapsRequired:1];
+    [tapGesture setDelegate:self];
+    [aBlock addGestureRecognizer:tapGesture];
+    [tapGesture release];
+    
+    UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panBlock:)];
+    [panGesture setMaximumNumberOfTouches:2];
+    [panGesture setDelegate:self];
+    [aBlock addGestureRecognizer:panGesture];
+    [panGesture release];
+}
+
 - (void)setupPuzzle
 {
     UIImage *image = [UIImage imageNamed:DEFAULT_IMAGE_NAME];
@@ -135,21 +150,6 @@
     }
     
     self.blockArray = array;
-}
-
-- (void)setupGestureRecognizersToBlock:(BlockView *)aBlock
-{
-    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapBlock:)];
-    [tapGesture setNumberOfTapsRequired:1];
-    [tapGesture setDelegate:self];
-    [aBlock addGestureRecognizer:tapGesture];
-    [tapGesture release];
-    
-    UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panBlock:)];
-    [panGesture setMaximumNumberOfTouches:2];
-    [panGesture setDelegate:self];
-    [aBlock addGestureRecognizer:panGesture];
-    [panGesture release];
 }
 
 #pragma mark - view lifecycle
