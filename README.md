@@ -4,9 +4,9 @@
 
 
 ### Clone from github
-`git clone git://github.com/jtg2078/Puzzle.git`</br>
-`cd puzzle`</br>
-`git submodule update --init`</br>
+`git clone git://github.com/jtg2078/Puzzle.git`
+`cd puzzle`
+`git submodule update --init`
 
 ## About this project
 
