@@ -14,6 +14,11 @@
     CGPoint invalid;
     int blockWidth;
     int blockHeight;
+    int rows;
+    int cols;
+    int numBlocks;
+    int imageWidth;
+    int imageHeight;
 }
 @property (nonatomic, retain) NSArray *blockArray;
 @property (nonatomic, retain) BlockView *emptyBlock;

@@ -16,10 +16,12 @@
 
 - (void)shuffleBlocksWithAnimation:(BOOL)animation;
 - (CGPoint)testForPossibleMove:(BlockView *)aBlock;
+- (NSDictionary *)testForPossibleMoveChained:(BlockView *)aBlock;
 - (BOOL)checkForPuzzleCompleteState;
 - (void)checkPuzzleState;
+- (void)setPuzzleToInitialState;
 
-- (UIImage *)diceUpImage:(UIImage *)aImage frame:(CGRect)aFrame;
+- (UIImage *)sliceUpImage:(UIImage *)aImage frame:(CGRect)aFrame;
 - (UIImage *)resizeImageIfNeeded:(UIImage *)aImage width:(CGFloat)aWidth height:(CGFloat)aHeight;
 - (void)adjustAnchorPointForGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer;
 @end
@@ -30,8 +32,13 @@
 
 #define NUM_BLOCK_PER_ROW_COL           4
 #define DEFAULT_IMAGE_NAME              @"UIE_Slider_Puzzle--globe.jpg"
+#define DEFAULT_IMAGE_WIDTH             320
+#define DEFAULT_IMAGE_HEIGHT            320
 #define DEFAULT_BLOCK_ANIMATION_SPEED   0.2f
 #define SHUFFLE_MOVE_COUNT              20
+
+#define MOVE_INFO_KEY_DESTINATION_BLOCK     @"aBlockDestination"
+#define MOVE_INFO_KEY_AFFECTED_BLOCKS       @"blocksInRange"
 
 #pragma mark - synthesize
 
@@ -71,18 +78,25 @@
                                                                    action:@selector(shuffleButtonPressed)];
 	self.navigationItem.rightBarButtonItem = rightButton;
 	[rightButton release];
+    
+    UIBarButtonItem *leftButton = [[UIBarButtonItem alloc] initWithTitle:@"Reset" 
+                                                                   style:UIBarButtonItemStyleBordered 
+                                                                  target:self 
+                                                                  action:@selector(resetButtonPressed)];
+    self.navigationItem.leftBarButtonItem = leftButton;
+    [leftButton release];
 }
 
 - (void)setupPuzzle
 {
     UIImage *image = [UIImage imageNamed:DEFAULT_IMAGE_NAME];
-    int rows = NUM_BLOCK_PER_ROW_COL;
-    int cols = NUM_BLOCK_PER_ROW_COL;
-    int numBlocks = rows * cols;
+    rows = NUM_BLOCK_PER_ROW_COL;
+    cols = NUM_BLOCK_PER_ROW_COL;
+    numBlocks = rows * cols;
     
     NSMutableArray *array = [NSMutableArray arrayWithCapacity:numBlocks - 1];
-    int imageWidth = 320;
-    int imageHeight = 320;
+    imageWidth = DEFAULT_IMAGE_WIDTH;
+    imageHeight = DEFAULT_IMAGE_HEIGHT;
     image = [self resizeImageIfNeeded:image width:imageWidth height:imageHeight];
     blockWidth = imageWidth / cols;
     blockHeight = imageHeight / rows;
@@ -107,7 +121,7 @@
                 break;
             }
             
-            block.imageView.image = [self diceUpImage:image frame:blockFrame];
+            block.imageView.image = [self sliceUpImage:image frame:blockFrame];
             [self setupGestureRecognizersToBlock:block];
             
             [self.view addSubview:block];
@@ -207,8 +221,6 @@
 - (CGPoint)testForPossibleMove:(BlockView *)aBlock
 {
     // see if aBlock's neighbor contains empty block or not
-    int rows = NUM_BLOCK_PER_ROW_COL;
-    int cols = NUM_BLOCK_PER_ROW_COL;
     int top = 0;
     int left = 0;
     int right = cols - 1;
@@ -256,6 +268,106 @@
     return invalid;
 }
 
+- (NSDictionary *)testForPossibleMoveChained:(BlockView *)aBlock
+{
+    // how do we do this?
+    /*
+     method one:
+     1. create four arrays(top,down,left,right), add the the corresponding neighbor blocks to the array
+     2. no this is not a good idea
+     method two:
+     1. examine the empty block current location x and y
+     2. if either one of x or y for aBlock is same as empty block, then we know it is moveable
+     3. find out all the blocks between aBlock and the empty block
+     4. find out aBlock's immediate move position
+     */
+    NSMutableDictionary *moveInfo = [NSMutableDictionary dictionary];
+    NSMutableArray *blocksInRange = [NSMutableArray array];
+    
+    if(aBlock.currentPosition.x == self.emptyBlock.currentPosition.x)
+    {
+        // top or down
+        if(self.emptyBlock.currentPosition.y < aBlock.currentPosition.y) // top
+        {
+            [self.blockArray enumerateObjectsUsingBlock:^(BlockView *b, NSUInteger idx, BOOL *stop) {
+                if(b.currentPosition.x == self.emptyBlock.currentPosition.x &&
+                   b.currentPosition.y > self.emptyBlock.currentPosition.y &&
+                   b.currentPosition.y < aBlock.currentPosition.y)
+                {
+                    CGPoint moveTo = b.currentPosition;
+                    moveTo.y -= 1;
+                    b.moveToPosition = moveTo;
+                    [blocksInRange addObject:b];
+                }
+            }];
+            CGPoint aBlockDestination = CGPointMake(aBlock.currentPosition.x, aBlock.currentPosition.y - 1);
+            [moveInfo setObject:[NSValue valueWithCGPoint:aBlockDestination] forKey:MOVE_INFO_KEY_DESTINATION_BLOCK];
+        }
+        else // down
+        {
+            [self.blockArray enumerateObjectsUsingBlock:^(BlockView *b, NSUInteger idx, BOOL *stop) {
+                if(b.currentPosition.x == self.emptyBlock.currentPosition.x &&
+                   b.currentPosition.y < self.emptyBlock.currentPosition.y &&
+                   b.currentPosition.y > aBlock.currentPosition.y)
+                {
+                    CGPoint moveTo = b.currentPosition;
+                    moveTo.y += 1;
+                    b.moveToPosition = moveTo;
+                    [blocksInRange addObject:b];
+                }
+                    
+            }];
+            CGPoint aBlockDestination = CGPointMake(aBlock.currentPosition.x, aBlock.currentPosition.y + 1);
+            [moveInfo setObject:[NSValue valueWithCGPoint:aBlockDestination] forKey:MOVE_INFO_KEY_DESTINATION_BLOCK];
+        }
+        [moveInfo setObject:blocksInRange forKey:MOVE_INFO_KEY_AFFECTED_BLOCKS];
+        return moveInfo;
+    }
+    
+    if(aBlock.currentPosition.y == self.emptyBlock.currentPosition.y)
+    {
+        // left or right
+        if(self.emptyBlock.currentPosition.x < aBlock.currentPosition.x) // left
+        {
+            [self.blockArray enumerateObjectsUsingBlock:^(BlockView *b, NSUInteger idx, BOOL *stop) {
+                if(b.currentPosition.y == self.emptyBlock.currentPosition.y &&
+                   b.currentPosition.x > self.emptyBlock.currentPosition.x &&
+                   b.currentPosition.x < aBlock.currentPosition.x)
+                {
+                    CGPoint moveTo = b.currentPosition;
+                    moveTo.x -= 1;
+                    b.moveToPosition = moveTo;
+                    [blocksInRange addObject:b];
+                }
+                    
+            }];
+            CGPoint aBlockDestination = CGPointMake(aBlock.currentPosition.x - 1, aBlock.currentPosition.y);
+            [moveInfo setObject:[NSValue valueWithCGPoint:aBlockDestination] forKey:MOVE_INFO_KEY_DESTINATION_BLOCK];
+        }
+        else // right
+        {
+            [self.blockArray enumerateObjectsUsingBlock:^(BlockView *b, NSUInteger idx, BOOL *stop) {
+                if(b.currentPosition.y == self.emptyBlock.currentPosition.y &&
+                   b.currentPosition.x < self.emptyBlock.currentPosition.x &&
+                   b.currentPosition.x > aBlock.currentPosition.x)
+                {
+                    CGPoint moveTo = b.currentPosition;
+                    moveTo.x += 1;
+                    b.moveToPosition = moveTo;
+                    [blocksInRange addObject:b];
+                }
+                    
+            }];
+            CGPoint aBlockDestination = CGPointMake(aBlock.currentPosition.x + 1, aBlock.currentPosition.y);
+            [moveInfo setObject:[NSValue valueWithCGPoint:aBlockDestination] forKey:MOVE_INFO_KEY_DESTINATION_BLOCK];
+        }
+        [moveInfo setObject:blocksInRange forKey:MOVE_INFO_KEY_AFFECTED_BLOCKS];
+        return moveInfo;
+    }
+    
+    return nil;
+}
+
 - (void)swapBlcokAndEmptyBlockPosition:(BlockView *)aBlock animation:(BOOL)animation 
 {
     if(self.debuggingMode == YES)
@@ -285,11 +397,10 @@
     
     if(animation)
     {
-        [UIView animateWithDuration:DEFAULT_BLOCK_ANIMATION_SPEED animations:^{
-            
+        [UIView animateWithDuration:DEFAULT_BLOCK_ANIMATION_SPEED delay:0 options:UIViewAnimationOptionAllowUserInteraction|UIViewAnimationOptionBeginFromCurrentState animations:^{
             self.emptyBlock.frame = e;
             aBlock.frame = b;
-        }];
+        } completion:^(BOOL finished) {}];
     }
     else 
     {
@@ -337,11 +448,49 @@
     }
 }
 
+- (void)setPuzzleToInitialState
+{
+    [UIView animateWithDuration:DEFAULT_BLOCK_ANIMATION_SPEED animations:^{
+        int x = 0;
+        int y = 0;
+        int count = 0;
+        int bound = [self.blockArray count];
+        for(int r = 0; r < rows; r++)
+        {
+            x = 0;
+            for(int c = 0; c < cols; c++)
+            {
+                BlockView *block = nil;
+                // since the last block is the empty block and not in the blockArray
+                if(count < bound)
+                    block = [self.blockArray objectAtIndex:count];
+                else
+                    block = self.emptyBlock;
+                
+                CGRect blockFrame = CGRectMake(x, y, blockWidth, blockHeight);
+                block.originalPosition = CGPointMake(c, r);
+                block.currentPosition = CGPointMake(c, r);
+                block.moveToPosition = CGPointZero;
+                block.frame = blockFrame;
+                
+                x += blockWidth;
+                count++;
+            }
+            y += blockHeight;
+        }
+    }];
+}
+
 #pragma mark - user interaction
 
 - (void)shuffleButtonPressed
 {
     [self shuffleBlocksWithAnimation:YES];
+}
+
+- (void)resetButtonPressed
+{
+    [self setPuzzleToInitialState];
 }
 
 - (void)tapBlock:(UITapGestureRecognizer *)gestureRecognizer
@@ -364,10 +513,11 @@
     
     if ([gestureRecognizer state] == UIGestureRecognizerStateBegan || [gestureRecognizer state] == UIGestureRecognizerStateChanged)
     {
-        CGPoint availableMove = [self testForPossibleMove:pannedBlock];
-        if(CGPointEqualToPoint(availableMove, invalid) == NO)
+        NSDictionary *moveInfo = [self testForPossibleMoveChained:pannedBlock];
+        if(moveInfo)
         {
             CGPoint translation = [gestureRecognizer translationInView:[pannedBlock superview]];
+            CGPoint availableMove = [[moveInfo objectForKey:MOVE_INFO_KEY_DESTINATION_BLOCK] CGPointValue];
             
             // find out if the move is horizontal or vertical
             // since the either one x or y will remain the same, we can use this property
@@ -402,18 +552,29 @@
             blockPos.origin.x += translation.x;
             blockPos.origin.y += translation.y;
             
-            
             pannedBlock.frame = blockPos;
+            
+            [[moveInfo objectForKey:MOVE_INFO_KEY_AFFECTED_BLOCKS] enumerateObjectsUsingBlock:^(BlockView *b, NSUInteger idx, BOOL *stop) {
+                CGRect bFrame = b.frame;
+                bFrame.origin.x += translation.x;
+                bFrame.origin.y += translation.y;
+                b.frame = bFrame;
+            }];
         }
         [gestureRecognizer setTranslation:CGPointZero inView:[pannedBlock superview]];
     }
     
     if([gestureRecognizer state] == UIGestureRecognizerStateEnded)
     {
-        CGPoint availableMove = [self testForPossibleMove:pannedBlock];
-        if(CGPointEqualToPoint(availableMove, invalid) == NO)
+        //CGPoint availableMove = [self testForPossibleMove:pannedBlock];
+        NSDictionary *moveInfo = [self testForPossibleMoveChained:pannedBlock];
+        if(moveInfo)
         {
             CGPoint translation = [gestureRecognizer translationInView:[pannedBlock superview]];
+            CGPoint availableMove = [[moveInfo objectForKey:MOVE_INFO_KEY_DESTINATION_BLOCK] CGPointValue];
+            
+            // The velocity of the pan gesture, which is expressed in points per second. The velocity is broken into horizontal and vertical components.
+            CGPoint velocity = [gestureRecognizer velocityInView:[pannedBlock superview]];
             
             // find out if the move is horizontal or vertical
             // since the either one x or y will remain the same, we can use this property
@@ -424,12 +585,47 @@
                 translation.x = 0;
                 float was = pannedBlock.currentPosition.y * blockHeight;
                 float current = pannedBlock.frame.origin.y;
-                int trigger = blockHeight / 2;
-                if(abs(was - current) >= trigger)
+                float trigger = blockHeight / 2;
+                float displacement = abs(was - current);
+                
+                if(displacement >= trigger)
                 {
                     if(self.debuggingMode == YES) NSLog(@"vertical snapped over");
                     
-                    [self swapBlcokAndEmptyBlockPosition:pannedBlock animation:YES];
+                    self.emptyBlock.currentPosition = pannedBlock.currentPosition;
+                    pannedBlock.currentPosition = availableMove;
+                    
+                    CGRect e = self.emptyBlock.frame;
+                    e.origin.x = emptyBlock.currentPosition.x * e.size.width;
+                    e.origin.y = emptyBlock.currentPosition.y * e.size.height;
+                    
+                    CGRect b = pannedBlock.frame;
+                    b.origin.x = pannedBlock.currentPosition.x * b.size.width;
+                    b.origin.y = pannedBlock.currentPosition.y * b.size.height;
+                    
+                    // calculate speed
+                    float speed = abs(velocity.y);
+                    float timeForAnimation = displacement / speed;
+                    timeForAnimation = MIN(timeForAnimation, DEFAULT_BLOCK_ANIMATION_SPEED);
+                    
+                    if(self.debuggingMode == YES) 
+                        NSLog(@"displacement: %f\nspeed(in y): %f\ntimeForAnimation: %f", 
+                              displacement, speed, timeForAnimation);
+                    
+                    [UIView animateWithDuration:timeForAnimation delay:0 options:UIViewAnimationOptionAllowUserInteraction|UIViewAnimationCurveLinear|UIViewAnimationOptionBeginFromCurrentState animations:^{
+                        
+                        self.emptyBlock.frame = pannedBlock.frame;
+                        pannedBlock.frame = b;
+                        
+                        [[moveInfo objectForKey:MOVE_INFO_KEY_AFFECTED_BLOCKS] enumerateObjectsUsingBlock:^(BlockView *b, NSUInteger idx, BOOL *stop) {
+                            CGRect f = b.frame;
+                            f.origin.x = b.moveToPosition.x * f.size.width;
+                            f.origin.y = b.moveToPosition.y * f.size.height;
+                            b.frame = f;
+                            b.currentPosition = b.moveToPosition;
+                        }]; 
+                    } completion:^(BOOL finished) {}];
+                    
                     [self checkPuzzleState];
                 }
                 else 
@@ -440,6 +636,12 @@
                     [UIView animateWithDuration:DEFAULT_BLOCK_ANIMATION_SPEED animations:^{
                         
                         pannedBlock.frame = frame;
+                        [[moveInfo objectForKey:MOVE_INFO_KEY_AFFECTED_BLOCKS] enumerateObjectsUsingBlock:^(BlockView *b, NSUInteger idx, BOOL *stop) {
+                            CGRect f = b.frame;
+                            f.origin.x = b.currentPosition.x * f.size.width;
+                            f.origin.y = b.currentPosition.y * f.size.height;
+                            b.frame = f;
+                        }];
                     }]; 
                 }
             }
@@ -451,11 +653,46 @@
                 float was = pannedBlock.currentPosition.x * blockWidth;
                 float current = pannedBlock.frame.origin.x;
                 int trigger = blockWidth / 2;
-                if(abs(was - current) >= trigger)
+                float displacement = abs(was - current);
+                
+                if(displacement >= trigger)
                 {
                     if(self.debuggingMode == YES) NSLog(@"horizontal snapped over");
                     
-                    [self swapBlcokAndEmptyBlockPosition:pannedBlock animation:YES];
+                    self.emptyBlock.currentPosition = pannedBlock.currentPosition;
+                    pannedBlock.currentPosition = availableMove;
+                    
+                    CGRect e = self.emptyBlock.frame;
+                    e.origin.x = emptyBlock.currentPosition.x * e.size.width;
+                    e.origin.y = emptyBlock.currentPosition.y * e.size.height;
+                    
+                    CGRect b = pannedBlock.frame;
+                    b.origin.x = pannedBlock.currentPosition.x * b.size.width;
+                    b.origin.y = pannedBlock.currentPosition.y * b.size.height;
+                    
+                    // calculate speed
+                    float speed = abs(velocity.x);
+                    float timeForAnimation = displacement / speed;
+                    timeForAnimation = MIN(timeForAnimation, DEFAULT_BLOCK_ANIMATION_SPEED);
+                    
+                    if(self.debuggingMode == YES) 
+                        NSLog(@"displacement: %f\nspeed(in y): %f\ntimeForAnimation: %f", 
+                              displacement, speed, timeForAnimation);
+                    
+                    [UIView animateWithDuration:timeForAnimation delay:0 options:UIViewAnimationOptionAllowUserInteraction|UIViewAnimationCurveLinear|UIViewAnimationOptionBeginFromCurrentState animations:^{
+                        
+                        self.emptyBlock.frame = e;
+                        pannedBlock.frame = b;
+                        
+                        [[moveInfo objectForKey:MOVE_INFO_KEY_AFFECTED_BLOCKS] enumerateObjectsUsingBlock:^(BlockView *b, NSUInteger idx, BOOL *stop) {
+                            CGRect f = b.frame;
+                            f.origin.x = b.moveToPosition.x * f.size.width;
+                            f.origin.y = b.moveToPosition.y * f.size.height;
+                            b.frame = f;
+                            b.currentPosition = b.moveToPosition;
+                        }]; 
+                    } completion:^(BOOL finished) {}];
+                    
                     [self checkPuzzleState];
                 }
                 else 
@@ -466,6 +703,12 @@
                     [UIView animateWithDuration:DEFAULT_BLOCK_ANIMATION_SPEED animations:^{
                         
                         pannedBlock.frame = frame;
+                        [[moveInfo objectForKey:MOVE_INFO_KEY_AFFECTED_BLOCKS] enumerateObjectsUsingBlock:^(BlockView *b, NSUInteger idx, BOOL *stop) {
+                            CGRect f = b.frame;
+                            f.origin.x = b.currentPosition.x * f.size.width;
+                            f.origin.y = b.currentPosition.y * f.size.height;
+                            b.frame = f;
+                        }];
                     }]; 
                 }
             }
@@ -479,7 +722,7 @@
 
 #pragma mark - utility methods
 
-- (UIImage *)diceUpImage:(UIImage *)aImage frame:(CGRect)aFrame
+- (UIImage *)sliceUpImage:(UIImage *)aImage frame:(CGRect)aFrame
 {
     CGImageRef ref = CGImageCreateWithImageInRect(aImage.CGImage, aFrame);
     UIImage *image = [UIImage imageWithCGImage:ref];

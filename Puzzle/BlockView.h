@@ -14,6 +14,7 @@
 @property (nonatomic) BOOL displayId;
 @property (nonatomic) CGPoint originalPosition;
 @property (nonatomic) CGPoint currentPosition;
+@property (nonatomic) CGPoint moveToPosition;
 @property (nonatomic, retain) UIImageView *imageView;
 
 - (id)initWithFrame:(CGRect)frame id:(int)anId showId:(BOOL)aFlag;

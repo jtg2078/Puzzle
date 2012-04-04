@@ -23,6 +23,7 @@
 @synthesize displayId;
 @synthesize originalPosition;
 @synthesize currentPosition;
+@synthesize moveToPosition;
 @synthesize imageView;
 
 #pragma mark - dealloc
