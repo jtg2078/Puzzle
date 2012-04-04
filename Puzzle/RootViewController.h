@@ -12,6 +12,8 @@
 @class BlockView;
 @interface RootViewController : UIViewController <UIGestureRecognizerDelegate> {
     CGPoint invalid;
+    int blockWidth;
+    int blockHeight;
 }
 @property (nonatomic, retain) NSArray *blockArray;
 @property (nonatomic, retain) BlockView *emptyBlock;

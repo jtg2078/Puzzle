@@ -17,6 +17,7 @@
 - (void)shuffleBlocksWithAnimation:(BOOL)animation;
 - (CGPoint)testForPossibleMove:(BlockView *)aBlock;
 - (BOOL)checkForPuzzleCompleteState;
+- (void)checkPuzzleState;
 
 - (UIImage *)diceUpImage:(UIImage *)aImage frame:(CGRect)aFrame;
 - (UIImage *)resizeImageIfNeeded:(UIImage *)aImage width:(CGFloat)aWidth height:(CGFloat)aHeight;
@@ -83,8 +84,8 @@
     int imageWidth = 320;
     int imageHeight = 320;
     image = [self resizeImageIfNeeded:image width:imageWidth height:imageHeight];
-    int blockWidth = imageWidth / cols;
-    int blockHeight = imageHeight / rows;
+    blockWidth = imageWidth / cols;
+    blockHeight = imageHeight / rows;
     int x = 0;
     int y = 0;
     int count = 0;
@@ -130,13 +131,11 @@
     [aBlock addGestureRecognizer:tapGesture];
     [tapGesture release];
     
-    /*
     UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panBlock:)];
     [panGesture setMaximumNumberOfTouches:2];
     [panGesture setDelegate:self];
     [aBlock addGestureRecognizer:panGesture];
     [panGesture release];
-     */
 }
 
 #pragma mark - view lifecycle
@@ -322,6 +321,22 @@
     return matchedWithInitialState;
 }
 
+- (void)checkPuzzleState
+{
+    if([self checkForPuzzleCompleteState] == YES)
+    {
+        // the puzzle is solved!
+        NSLog(@"you win!!");
+        
+        UIAlertView *message = [[[UIAlertView alloc] initWithTitle:@"You Win!" 
+                                                           message:@"Puzzle solved" 
+                                                          delegate:nil 
+                                                 cancelButtonTitle:@"ok" 
+                                                 otherButtonTitles: nil] autorelease];
+        [message show];
+    }
+}
+
 #pragma mark - user interaction
 
 - (void)shuffleButtonPressed
@@ -338,18 +353,7 @@
     {
         [self swapBlcokAndEmptyBlockPosition:tappedBlock animation:YES];
         
-        if([self checkForPuzzleCompleteState] == YES)
-        {
-            // the puzzle is solved!
-            NSLog(@"you win!!");
-            
-            UIAlertView *message = [[[UIAlertView alloc] initWithTitle:@"You Win!" 
-                                                              message:@"Puzzle solved" 
-                                                             delegate:nil 
-                                                    cancelButtonTitle:@"ok" 
-                                                     otherButtonTitles: nil] autorelease];
-            [message show];
-        }
+        [self checkPuzzleState];
     }
 }
 
@@ -368,26 +372,105 @@
             // find out if the move is horizontal or vertical
             // since the either one x or y will remain the same, we can use this property
             // to determine the moved direction
+            CGRect blockPos = pannedBlock.frame;
             if(availableMove.x == pannedBlock.currentPosition.x)
             {
                 // vertical
                 translation.x = 0;
+                
+                int start = MIN(pannedBlock.currentPosition.y, availableMove.y) * blockHeight;
+                int end = MAX(pannedBlock.currentPosition.y, availableMove.y) * blockHeight;
+                float c = blockPos.origin.y + translation.y;
+                // limit the move range
+                
+                if(c <= start || c >= end)
+                    translation.y = 0;
             }
             else 
             {
                 // horizontal
                 translation.y = 0;
+                
+                int start = MIN(pannedBlock.currentPosition.x, availableMove.x) * blockWidth;
+                int end = MAX(pannedBlock.currentPosition.x, availableMove.x) * blockWidth;
+                float c = blockPos.origin.x + translation.x;
+                // limit the move range
+                if(c <= start || c >= end)
+                    translation.x = 0;
             }
             
-            // limit the move range
+            blockPos.origin.x += translation.x;
+            blockPos.origin.y += translation.y;
             
             
-            CGPoint blockCenter = pannedBlock.center;
-            blockCenter.x += translation.x;
-            blockCenter.y += translation.y;
-            
-            pannedBlock.center = blockCenter;
+            pannedBlock.frame = blockPos;
         }
+        [gestureRecognizer setTranslation:CGPointZero inView:[pannedBlock superview]];
+    }
+    
+    if([gestureRecognizer state] == UIGestureRecognizerStateEnded)
+    {
+        CGPoint availableMove = [self testForPossibleMove:pannedBlock];
+        if(CGPointEqualToPoint(availableMove, invalid) == NO)
+        {
+            CGPoint translation = [gestureRecognizer translationInView:[pannedBlock superview]];
+            
+            // find out if the move is horizontal or vertical
+            // since the either one x or y will remain the same, we can use this property
+            // to determine the moved direction
+            if(availableMove.x == pannedBlock.currentPosition.x)
+            {
+                // vertical
+                translation.x = 0;
+                float was = pannedBlock.currentPosition.y * blockHeight;
+                float current = pannedBlock.frame.origin.y;
+                int trigger = blockHeight / 2;
+                if(abs(was - current) >= trigger)
+                {
+                    if(self.debuggingMode == YES) NSLog(@"vertical snapped over");
+                    
+                    [self swapBlcokAndEmptyBlockPosition:pannedBlock animation:YES];
+                    [self checkPuzzleState];
+                }
+                else 
+                {
+                    if(self.debuggingMode == YES) NSLog(@"vertical snapped under");
+                    
+                    CGRect frame = CGRectMake(pannedBlock.currentPosition.x * blockWidth, pannedBlock.currentPosition.y * blockHeight, blockWidth, blockHeight);
+                    [UIView animateWithDuration:DEFAULT_BLOCK_ANIMATION_SPEED animations:^{
+                        
+                        pannedBlock.frame = frame;
+                    }]; 
+                }
+            }
+            else 
+            {
+                // horizontal
+                translation.y = 0;
+                
+                float was = pannedBlock.currentPosition.x * blockWidth;
+                float current = pannedBlock.frame.origin.x;
+                int trigger = blockWidth / 2;
+                if(abs(was - current) >= trigger)
+                {
+                    if(self.debuggingMode == YES) NSLog(@"horizontal snapped over");
+                    
+                    [self swapBlcokAndEmptyBlockPosition:pannedBlock animation:YES];
+                    [self checkPuzzleState];
+                }
+                else 
+                {
+                    if(self.debuggingMode == YES) NSLog(@"horizontal snapped under");
+                    
+                    CGRect frame = CGRectMake(pannedBlock.currentPosition.x * blockWidth, pannedBlock.currentPosition.y * blockHeight, blockWidth, blockHeight);
+                    [UIView animateWithDuration:DEFAULT_BLOCK_ANIMATION_SPEED animations:^{
+                        
+                        pannedBlock.frame = frame;
+                    }]; 
+                }
+            }
+        }
+        
         [gestureRecognizer setTranslation:CGPointZero inView:[pannedBlock superview]];
     }
 }
