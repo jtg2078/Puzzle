@@ -18,8 +18,15 @@ This project is about building a slider puzzle app that allows users to move til
 
 ### Implementation detail
 #### Animating the tiles
-To animate the movement of blocks, I've decided to use `[UIView animateWithDuration…]` and utilize the duration parameter to control the pace of the block movement. The end result is somewhat satsifactory, but could definitely be better. One other way that I can think of, which probably give a smoother transition is to use `[CADisplayLink displayLinkWithTarget…]` and control the position of blocks. Will definite try it on the next update… 
+To animate the movement of blocks, I've decided to use `[UIView animateWithDuration…]` and utilize the duration parameter to control the pace of the animation. The end result is somewhat satisfactory, but it could definitely be better. One other way I can think that could probably give a smoother movement is using `[CADisplayLink displayLinkWithTarget…]` to control the position of blocks. Will definitely try it on the next update… 
 #### Moving the tiles
-User interactions, mainly the touches, are being handled by UIGestureRecognizer. Two types of gesture recognizer are used in the project, *UITapGestureRecognizer* and *UIPanGestureRecognizer*. I choose to use gesture recognizers instead of `[UIView touchesBegan…]` and related methods are mainly because they are easier to implement and go rather well with `[UIView animateWithDuration…]`. Again, if we are going to use the `[CADisplayLink displayLinkWithTarget…]`, then it is probably better to switch to `[UIView touchesBegan…]` to handle user touches.
+User interactions, primarily the touches, are being handled by UIGestureRecognizer. Two types of gesture recognizer are used in the project, *UITapGestureRecognizer* and *UIPanGestureRecognizer*. I choose to use gesture recognizers instead of `[UIView touchesBegan…]` and related methods are mainly because they are easier to implement and go rather well with `[UIView animateWithDuration…]`. Again, if we are going to use the `[CADisplayLink displayLinkWithTarget…]`, then it is probably better to switch to `[UIView touchesBegan…]` to handle user touches there.
 #### Miscellaneous
 Testlfight is used(added as submodule)
+
+### Moving on
++ add a solver to solve the puzzle step by step
++ ability to change the image from a set of images or use the camera to take a picture instead
++ optimize the code for handling touches and blocks movement mechanism
++ add a timer
++ layout and icons
