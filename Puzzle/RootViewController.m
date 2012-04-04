@@ -595,14 +595,6 @@
                     self.emptyBlock.currentPosition = pannedBlock.currentPosition;
                     pannedBlock.currentPosition = availableMove;
                     
-                    CGRect e = self.emptyBlock.frame;
-                    e.origin.x = emptyBlock.currentPosition.x * e.size.width;
-                    e.origin.y = emptyBlock.currentPosition.y * e.size.height;
-                    
-                    CGRect b = pannedBlock.frame;
-                    b.origin.x = pannedBlock.currentPosition.x * b.size.width;
-                    b.origin.y = pannedBlock.currentPosition.y * b.size.height;
-                    
                     // calculate speed
                     float speed = abs(velocity.y);
                     float timeForAnimation = displacement / speed;
@@ -614,8 +606,15 @@
                     
                     [UIView animateWithDuration:timeForAnimation delay:0 options:UIViewAnimationOptionAllowUserInteraction|UIViewAnimationCurveLinear|UIViewAnimationOptionBeginFromCurrentState animations:^{
                         
-                        self.emptyBlock.frame = pannedBlock.frame;
-                        pannedBlock.frame = b;
+                        CGRect e = self.emptyBlock.frame;
+                        e.origin.x = emptyBlock.currentPosition.x * e.size.width;
+                        e.origin.y = emptyBlock.currentPosition.y * e.size.height;
+                        self.emptyBlock.frame = e;
+                        
+                        CGRect p = pannedBlock.frame;
+                        p.origin.x = pannedBlock.currentPosition.x * p.size.width;
+                        p.origin.y = pannedBlock.currentPosition.y * p.size.height;
+                        pannedBlock.frame = p;
                         
                         [[moveInfo objectForKey:MOVE_INFO_KEY_AFFECTED_BLOCKS] enumerateObjectsUsingBlock:^(BlockView *b, NSUInteger idx, BOOL *stop) {
                             CGRect f = b.frame;
@@ -756,5 +755,7 @@
         piece.center = locationInSuperview;
     }
 }
+
+
 
 @end
