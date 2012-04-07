@@ -1,3 +1,6 @@
 [submodule "Library/TestFlight-SDK"]
 	path = Library/TestFlight-SDK
 	url = git://github.com/danielctull/TestFlight-SDK.git
+[submodule "Library/BlockAlertsAnd-ActionSheets"]
+	path = Library/BlockAlertsAnd-ActionSheets
+	url = git://github.com/gpambrozio/BlockAlertsAnd-ActionSheets.git
