@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		96198D8615310737009222BF /* PuzzleOptionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 96198D8515310737009222BF /* PuzzleOptionManager.m */; };
 		965A7CAF152A1E20002E7459 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 965A7CAE152A1E20002E7459 /* UIKit.framework */; };
 		965A7CB1152A1E20002E7459 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 965A7CB0152A1E20002E7459 /* Foundation.framework */; };
 		965A7CB3152A1E20002E7459 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 965A7CB2152A1E20002E7459 /* CoreGraphics.framework */; };
@@ -24,6 +25,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		96198D8415310737009222BF /* PuzzleOptionManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PuzzleOptionManager.h; sourceTree = "<group>"; };
+		96198D8515310737009222BF /* PuzzleOptionManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PuzzleOptionManager.m; sourceTree = "<group>"; };
 		965A7CAA152A1E20002E7459 /* Puzzle.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Puzzle.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		965A7CAE152A1E20002E7459 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		965A7CB0152A1E20002E7459 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -107,6 +110,8 @@
 				965A7CC7152A1E4F002E7459 /* RootViewController.xib */,
 				965A7CCA152A1EBF002E7459 /* BlockView.h */,
 				965A7CCB152A1EBF002E7459 /* BlockView.m */,
+				96198D8415310737009222BF /* PuzzleOptionManager.h */,
+				96198D8515310737009222BF /* PuzzleOptionManager.m */,
 			);
 			path = Puzzle;
 			sourceTree = "<group>";
@@ -219,6 +224,7 @@
 				965A7CBF152A1E21002E7459 /* AppDelegate.m in Sources */,
 				965A7CC8152A1E4F002E7459 /* RootViewController.m in Sources */,
 				965A7CCC152A1EBF002E7459 /* BlockView.m in Sources */,
+				96198D8615310737009222BF /* PuzzleOptionManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
