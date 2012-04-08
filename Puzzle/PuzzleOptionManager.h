@@ -7,8 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <MobileCoreServices/UTCoreTypes.h>
 
-@interface PuzzleOptionManager : NSObject
+@interface PuzzleOptionManager : NSObject <UIImagePickerControllerDelegate, UINavigationControllerDelegate>
 
 + (PuzzleOptionManager *)sharedInstance;
 
